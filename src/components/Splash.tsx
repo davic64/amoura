@@ -1,14 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Splash() {
-  const [showSplash, setShowSplash] = useState(true);
+  const [showSplash, setShowSplash] = useState(false);
+  const [hasChecked, setHasChecked] = useState(false);
 
-  if (!showSplash) return null;
+  useEffect(() => {
+    const splashShown = sessionStorage.getItem("splashShown");
+    if (!splashShown) {
+      setShowSplash(true);
+      sessionStorage.setItem("splashShown", "true");
+    }
+    setHasChecked(true);
+  }, []);
+
+  if (!hasChecked || !showSplash) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white">
+    <div className="fixed inset-0 z-100 flex items-center justify-center bg-white">
       <video
         autoPlay
         muted

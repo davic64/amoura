@@ -15,11 +15,11 @@ import { cn } from "@/lib/utils";
 
 const ALL_MOODS = [
   { status: "Feliz", emoji: "😊" },
-  { status: "Cansado/a", emoji: "😴" },
-  { status: "Enojado/a", emoji: "😠" },
-  { status: "Enamorado/a", emoji: "😍" },
+  { status: "Cansado", emoji: "😴" },
+  { status: "Enojado", emoji: "😠" },
+  { status: "Enamorado", emoji: "😍" },
   { status: "Triste", emoji: "😢" },
-  { status: "Emocionado/a", emoji: "🤩" },
+  { status: "Emocionado", emoji: "🤩" },
 ];
 
 export function MoodSection() {
@@ -85,7 +85,7 @@ export function MoodSection() {
               María
             </span>
             <span className="mb-2 text-4xl">🥰</span>
-            <span className="text-sm font-bold text-gray-900">Mimoso/a</span>
+            <span className="text-sm font-bold text-gray-900">Cariñosa</span>
           </CardContent>
         </Card>
       </div>

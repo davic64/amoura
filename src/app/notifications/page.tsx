@@ -57,7 +57,7 @@ export default function NotificacionesPage() {
           className="flex h-12 px-5 items-center gap-2 rounded-2xl bg-white text-[#F43E5C] text-sm font-bold shadow-sm ring-1 ring-black/5 active:scale-95 transition-all outline-none"
         >
           <CheckCheck className="h-5 w-5" />
-          <span className="hidden sm:inline">Marcar leídas</span>
+          <span className="hidden sm:inline">Marcar como leídas</span>
         </button>
       </header>
 

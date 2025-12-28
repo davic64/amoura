@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Image, Sparkles, Ticket } from "lucide-react";
+import { Home, Image, Calendar, Ticket } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -19,7 +19,7 @@ const navItems = [
   {
     label: "Planes",
     href: "/planes",
-    icon: Sparkles,
+    icon: Calendar,
   },
   {
     label: "Cupones",

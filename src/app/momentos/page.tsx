@@ -240,20 +240,29 @@ export default function MomentosPage() {
 
   return (
     <main className="min-h-screen bg-[#F8F5F6] pb-32">
-      <header className="flex items-center justify-between px-4 py-8">
-        <h1 className="text-2xl font-bold text-gray-900">Momentos</h1>
+      <header className="px-6 py-10 flex flex-col gap-6">
+        <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-1">
+            <h1 className="text-3xl font-black text-gray-900 tracking-tight">
+              Momentos
+            </h1>
+            <p className="text-sm font-medium text-gray-500">
+              Nuestros recuerdos favoritos
+            </p>
+          </div>
 
-        <div className="flex items-center gap-3 bg-white/50 backdrop-blur-sm px-3 py-2 rounded-2xl shadow-sm ring-1 ring-black/5">
-          {showSecrets ? (
-            <Eye className="h-4 w-4 text-[#F43E5C]" />
-          ) : (
-            <EyeOff className="h-4 w-4 text-gray-400" />
-          )}
-          <Switch
-            checked={showSecrets}
-            onCheckedChange={setShowSecrets}
-            className="scale-75"
-          />
+          <div className="flex items-center gap-3 bg-white/50 backdrop-blur-sm px-3 py-2 rounded-2xl shadow-sm ring-1 ring-black/5 self-start">
+            {showSecrets ? (
+              <Eye className="h-4 w-4 text-[#F43E5C]" />
+            ) : (
+              <EyeOff className="h-4 w-4 text-gray-400" />
+            )}
+            <Switch
+              checked={showSecrets}
+              onCheckedChange={setShowSecrets}
+              className="scale-75"
+            />
+          </div>
         </div>
       </header>
 
@@ -286,7 +295,7 @@ export default function MomentosPage() {
                 <DialogDescription className="text-sm font-medium text-gray-500">
                   {editingMoment
                     ? "Actualiza tu recuerdo especial"
-                    : "Captura un instante inolvidable"}
+                    : "Captura un momento inolvidable"}
                 </DialogDescription>
               </header>
 
@@ -346,7 +355,7 @@ export default function MomentosPage() {
                           Sube una foto
                         </span>
                         <p className="text-xs text-gray-500 font-medium mt-1">
-                          Vuestros momentos favoritos
+                          Sus momentos favoritos
                         </p>
                       </div>
                     </>
