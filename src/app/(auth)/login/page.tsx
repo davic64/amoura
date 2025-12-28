@@ -38,13 +38,19 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="h-svh bg-[#F8F5F6] flex flex-col items-center justify-center px-6 relative overflow-hidden">
+    <main
+      className="h-svh bg-[#F8F5F6] flex flex-col items-center justify-center px-6 relative overflow-hidden"
+      style={{
+        paddingTop: "env(safe-area-inset-top)",
+        paddingBottom: "env(safe-area-inset-bottom)",
+      }}
+    >
       {/* Decorative Background Elements */}
       <div className="fixed -top-[20%] -left-[20%] w-full h-[60%] bg-linear-to-br from-[#FF6B92]/25 to-transparent blur-[120px] rounded-full pointer-events-none" />
       <div className="fixed -bottom-[15%] -right-[15%] w-[80%] h-[50%] bg-linear-to-br from-[#B345D1]/15 to-transparent blur-[120px] rounded-full pointer-events-none" />
 
       <div className="w-full max-w-sm z-10">
-        <header className="flex flex-col items-center text-center mb-10 animate-fade-in delay-200">
+        <header className="flex flex-col items-center text-center mb-10 animate-fade-in">
           <div className="h-20 w-20 rounded-[24px] overflow-hidden shadow-xl shadow-[#F43E5C]/20 mb-6">
             <Image
               src="/amoura_icon.png"
@@ -62,7 +68,7 @@ export default function LoginPage() {
           </p>
         </header>
 
-        <div className="bg-white/70 backdrop-blur-2xl rounded-[40px] p-8 shadow-xl shadow-black/3 ring-1 ring-black/5 animate-scale-in delay-400">
+        <div className="bg-white/70 backdrop-blur-2xl rounded-[40px] p-8 shadow-xl shadow-black/3 ring-1 ring-black/5 animate-scale-in">
           <form onSubmit={handleLogin} className="space-y-5">
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#F43E5C] ml-1">
@@ -115,7 +121,7 @@ export default function LoginPage() {
           </form>
         </div>
 
-        <p className="mt-10 text-center text-sm font-medium text-gray-500 animate-fade-in delay-600">
+        <p className="mt-10 text-center text-sm font-medium text-gray-500 animate-fade-in">
           ¿No tienes cuenta?{" "}
           <Link
             href="/register"

@@ -22,38 +22,40 @@ export default function Splash() {
     if (showSplash) {
       const timer = setTimeout(() => {
         setIsExiting(true);
-        // Wait for fade out animation
+        // Add ready class immediately to start login animations during fade out
+        document.body.classList.add("is-ready");
+
         setTimeout(() => {
           setShowSplash(false);
+          // Restore app background color
+          document.documentElement.style.backgroundColor = "";
         }, 800);
       }, 3000); // 3 seconds visible
       return () => clearTimeout(timer);
     }
   }, [showSplash]);
 
-  // Block scroll and add ready class
+  // Block scroll
   useEffect(() => {
-    if (hasChecked && !showSplash) {
-      document.body.classList.add("is-ready");
-      document.body.style.overflow = "";
-      document.body.style.touchAction = "";
-    } else if (showSplash) {
-      document.body.classList.remove("is-ready");
+    if (showSplash) {
       document.body.style.overflow = "hidden";
       document.body.style.touchAction = "none";
+    } else {
+      document.body.style.overflow = "";
+      document.body.style.touchAction = "";
     }
 
     return () => {
       document.body.style.overflow = "";
       document.body.style.touchAction = "";
     };
-  }, [hasChecked, showSplash]);
+  }, [showSplash]);
 
   if (hasChecked && !showSplash) return null;
 
   return (
     <div
-      className={`fixed inset-0 z-100 flex items-center justify-center bg-[#010101] touch-none select-none overflow-hidden h-dvh w-screen transition-opacity duration-700 ${
+      className={`fixed inset-0 z-100 flex items-center justify-center bg-[#f43e5c] touch-none select-none overflow-hidden transition-opacity duration-700 ${
         isExiting ? "opacity-0" : "opacity-100"
       }`}
     >
@@ -61,7 +63,7 @@ export default function Splash() {
         src="/splash.png"
         alt="Splash"
         className="h-full w-full object-cover absolute inset-0 transition-transform duration-3000 scale-100"
-        style={{ transform: isExiting ? "scale(1.1)" : "scale(1)" }}
+        style={{ transform: isExiting ? "scale(1.05)" : "scale(1)" }}
       />
     </div>
   );

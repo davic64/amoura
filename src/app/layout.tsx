@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#F8F5F6",
+  themeColor: "#f43e5c", // Match splash background to avoid initial flash
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -33,7 +33,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es">
+    <html lang="es" suppressHydrationWarning>
       <head>
         <link rel="icon" href="/amoura_icon.png" />
         <link rel="apple-touch-icon" href="/amoura_icon.png" />
@@ -41,6 +41,15 @@ export default function RootLayout({
         <meta
           name="apple-mobile-web-app-status-bar-style"
           content="black-translucent"
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if (!sessionStorage.getItem('splashShown')) {
+                document.documentElement.style.backgroundColor = '#f43e5c';
+              }
+            `,
+          }}
         />
         <link
           rel="apple-touch-startup-image"
