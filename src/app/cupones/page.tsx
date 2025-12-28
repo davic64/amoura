@@ -88,7 +88,7 @@ export default function CuponesPage() {
 
   return (
     <main className="min-h-screen bg-[#F8F5F6] pb-32">
-      <header className="px-6 py-10 flex flex-col gap-1">
+      <header className="px-6 py-10 flex flex-col gap-1 animate-fade-in">
         <h1 className="text-3xl font-black text-gray-900 tracking-tight">
           Mis Cupones
         </h1>
@@ -98,7 +98,7 @@ export default function CuponesPage() {
       </header>
 
       {/* Stats Summary */}
-      <div className="px-6 mb-8">
+      <div className="px-6 mb-8 animate-scale-in delay-100">
         <div className="bg-white/50 backdrop-blur-sm rounded-[24px] p-4 flex items-center justify-around ring-1 ring-black/3">
           <div className="flex flex-col items-center">
             <span className="text-[10px] font-black uppercase tracking-widest text-[#F43E5C] mb-1">
@@ -121,11 +121,12 @@ export default function CuponesPage() {
       </div>
 
       <div className="px-6 flex flex-col gap-4">
-        {coupons.map((coupon) => (
+        {coupons.map((coupon, index) => (
           <div
             key={coupon.id}
+            style={{ animationDelay: `${200 + index * 100}ms` }}
             className={cn(
-              "relative bg-white rounded-[32px] flex items-stretch transition-all overflow-hidden",
+              "relative bg-white rounded-[32px] flex items-stretch transition-all overflow-hidden animate-slide-up",
               coupon.isUsed ? "opacity-60" : "shadow-sm shadow-[#F43E5C]/10"
             )}
           >

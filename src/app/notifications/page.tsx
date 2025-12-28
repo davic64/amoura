@@ -41,7 +41,7 @@ export default function NotificacionesPage() {
 
   return (
     <main className="bg-[#F8F5F6] pb-8">
-      <header className="flex items-center justify-between px-4 py-6 bg-[#F8F5F6]/80 backdrop-blur-xl sticky top-0 z-10 border-b border-black/5">
+      <header className="flex items-center justify-between px-4 py-6 bg-[#F8F5F6]/80 backdrop-blur-xl sticky top-0 z-10 border-b border-black/5 animate-fade-in">
         <div className="flex items-center gap-4">
           <button
             onClick={() => router.back()}
@@ -63,30 +63,33 @@ export default function NotificacionesPage() {
 
       <div className="mx-auto max-w-md px-4 mt-8 flex flex-col gap-4">
         {notifications.length > 0 ? (
-          notifications.map((n) => (
-            <Alert
+          notifications.map((n, index) => (
+            <div
               key={n.id}
-              className="relative overflow-hidden pr-10 border-none shadow-sm ring-1 ring-black/5 bg-white rounded-3xl p-5 flex gap-4 items-center"
+              style={{ animationDelay: `${index * 100}ms` }}
+              className="animate-slide-right"
             >
-              <div
-                className="absolute left-0 top-0 bottom-0 w-1 bg-[#F43E5C] transition-opacity duration-300"
-                style={{ opacity: n.unread ? 1 : 0 }}
-              />
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#FFE5EB] text-2xl">
-                {n.icon}
-              </div>
-              <div className="flex flex-col gap-1">
-                <AlertTitle className="text-sm font-bold text-gray-900 leading-none">
-                  {n.title}
-                </AlertTitle>
-                <AlertDescription className="text-xs text-gray-400">
-                  {n.time}
-                </AlertDescription>
-              </div>
-              {n.unread && (
-                <div className="absolute right-5 top-1/2 -translate-y-1/2 h-2.5 w-2.5 rounded-full bg-[#F43E5C]" />
-              )}
-            </Alert>
+              <Alert className="relative overflow-hidden pr-10 border-none shadow-sm ring-1 ring-black/5 bg-white rounded-3xl p-5 flex gap-4 items-center">
+                <div
+                  className="absolute left-0 top-0 bottom-0 w-1 bg-[#F43E5C] transition-opacity duration-300"
+                  style={{ opacity: n.unread ? 1 : 0 }}
+                />
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#FFE5EB] text-2xl">
+                  {n.icon}
+                </div>
+                <div className="flex flex-col gap-1">
+                  <AlertTitle className="text-sm font-bold text-gray-900 leading-none">
+                    {n.title}
+                  </AlertTitle>
+                  <AlertDescription className="text-xs text-gray-400">
+                    {n.time}
+                  </AlertDescription>
+                </div>
+                {n.unread && (
+                  <div className="absolute right-5 top-1/2 -translate-y-1/2 h-2.5 w-2.5 rounded-full bg-[#F43E5C]" />
+                )}
+              </Alert>
+            </div>
           ))
         ) : (
           <div className="flex flex-col items-center justify-center py-20 text-center">

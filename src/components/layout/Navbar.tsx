@@ -34,7 +34,8 @@ export function Navbar() {
   if (
     pathname === "/notifications" ||
     pathname === "/login" ||
-    pathname === "/register"
+    pathname === "/register" ||
+    pathname === "/perfil"
   )
     return null;
 

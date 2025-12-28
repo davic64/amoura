@@ -240,7 +240,7 @@ export default function MomentosPage() {
 
   return (
     <main className="min-h-screen bg-[#F8F5F6] pb-32">
-      <header className="px-6 py-10 flex flex-col gap-6">
+      <header className="px-6 py-10 flex flex-col gap-6 animate-fade-in">
         <div className="flex items-center justify-between">
           <div className="flex flex-col gap-1">
             <h1 className="text-3xl font-black text-gray-900 tracking-tight">
@@ -415,7 +415,7 @@ export default function MomentosPage() {
       </Dialog>
 
       <div className="p-4 flex flex-col gap-4">
-        {filteredMoments.map((m) => {
+        {filteredMoments.map((m, index) => {
           const isLocked = m.isSecret && m.unlockDate && m.unlockDate > today;
           const daysLeft = isLocked
             ? Math.ceil(
@@ -428,8 +428,9 @@ export default function MomentosPage() {
           return (
             <Card
               key={m.id}
+              style={{ animationDelay: `${Math.min(index * 100, 500)}ms` }}
               className={cn(
-                "overflow-hidden transition-all duration-300 rounded-[32px] border-none shadow-md ring-1 ring-black/5",
+                "overflow-hidden transition-all duration-300 rounded-[32px] border-none shadow-md ring-1 ring-black/5 animate-slide-up",
                 isLocked
                   ? "bg-linear-to-br from-gray-900 to-gray-800 text-white"
                   : "bg-white"

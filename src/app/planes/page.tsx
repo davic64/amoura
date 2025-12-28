@@ -196,7 +196,7 @@ export default function PlanesPage() {
 
   return (
     <main className="min-h-screen bg-[#F8F5F6] pb-32">
-      <header className="px-6 py-10 flex flex-col gap-1">
+      <header className="px-6 py-10 flex flex-col gap-1 animate-fade-in">
         <h1 className="text-3xl font-black text-gray-900 tracking-tight">
           Planes
         </h1>
@@ -212,13 +212,14 @@ export default function PlanesPage() {
           </h2>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          {lists.map((list) => {
+          {lists.map((list, index) => {
             const Icon = list.icon;
             return (
               <button
                 key={list.id}
                 onClick={() => setSelectedList(list)}
-                className="bg-white rounded-[32px] p-5 flex flex-col items-start gap-4 shadow-sm ring-1 ring-black/5 active:scale-95 transition-all"
+                style={{ animationDelay: `${index * 100}ms` }}
+                className="bg-white rounded-[32px] p-5 flex flex-col items-start gap-4 shadow-sm ring-1 ring-black/5 active:scale-95 transition-all animate-scale-in"
               >
                 <div
                   className="h-12 w-12 rounded-2xl flex items-center justify-center shadow-inner"
@@ -246,10 +247,11 @@ export default function PlanesPage() {
         </div>
 
         <div className="flex flex-col gap-3">
-          {recentItems.map((item) => (
+          {recentItems.map((item, index) => (
             <Card
               key={item.id}
-              className="overflow-hidden rounded-[24px] border-none shadow-sm ring-1 ring-black/5 active:scale-[0.98] transition-all"
+              style={{ animationDelay: `${400 + index * 100}ms` }}
+              className="overflow-hidden rounded-[24px] border-none shadow-sm ring-1 ring-black/5 active:scale-[0.98] transition-all animate-slide-up"
             >
               <CardContent className="p-4">
                 <div className="flex items-center gap-4">
