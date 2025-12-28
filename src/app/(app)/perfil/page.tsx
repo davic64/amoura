@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   User,
@@ -29,6 +29,15 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/lib/supabase";
+import {
+  getProfile,
+  getPartnerProfile,
+  linkPartner,
+  unlinkPartner,
+  updateTogetherSince,
+} from "@/lib/profile";
+import { signOut } from "@/lib/auth";
 
 export default function PerfilPage() {
   const router = useRouter();
@@ -37,27 +46,157 @@ export default function PerfilPage() {
   const [inviteCode, setInviteCode] = useState("");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isEditingPartner, setIsEditingPartner] = useState(false);
-
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  
   // Form states
   const [userName, setUserName] = useState("David Victoria");
   const [userEmail, setUserEmail] = useState("david@amoura.com");
-  const [userPass, setUserPass] = useState("••••••••");
-
+  const [userPass, setUserPass] = useState("•••••");
+  
   const [partnerSince, setPartnerSince] = useState("15 de Octubre, 2021");
 
-  const userData = {
+  // Data states
+  const [userData, setUserData] = useState<{ myCode: string }>({
     myCode: "AM-8293-XV",
-  };
-
-  const partnerData = {
+  });
+  const [partnerData, setPartnerData] = useState<{
+    name: string;
+    email: string;
+  }>({
     name: "Amour",
     email: "amor@amoura.com",
-  };
+  });
 
   const copyCode = () => {
     navigator.clipboard.writeText(userData.myCode);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  useEffect(() => {
+    async function loadProfile() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) return;
+
+      try {
+        const profile = await getProfile(user.id);
+        if (!profile) return;
+
+        setHasPartner(!!profile.partner_id);
+        setUserData({
+          myCode: profile.invite_code || "AM-XXXX-XX",
+        });
+        setUserName(profile.full_name || "");
+        setUserEmail(profile.email || "");
+
+        if (profile.partner_id) {
+          const partner = await getPartnerProfile(user.id);
+          if (partner) {
+            setPartnerData({
+              name: partner.full_name || "",
+              email: partner.email || "",
+            });
+            setPartnerSince(
+              profile.together_since
+                ? new Date(profile.together_since).toLocaleDateString("es-ES", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })
+                : ""
+            );
+          }
+        }
+      } catch (err) {
+        console.error("Error loading profile:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadProfile();
+  }, []);
+
+  const handleLinkPartner = async () => {
+    if (!inviteCode.trim()) return;
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) throw new Error("No autenticado");
+
+      await linkPartner(user.id, inviteCode);
+      
+      // Recargar el profile
+      await loadProfile();
+      
+      // Mostrar mensaje de éxito
+      setError("¡Pareja vinculada con éxito!");
+      setTimeout(() => setError(""), 3000);
+    } catch (err: any) {
+      console.error("Error linking partner:", err);
+      setError(err.message || "Error al vincular pareja");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUnlinkPartner = async () => {
+    if (!confirm("¿Estás seguro de que quieres desvincular a tu pareja? Esta acción no se puede deshacer fácilmente.")) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) return;
+
+      await unlinkPartner(user.id);
+      setHasPartner(false);
+      setPartnerData({ name: "", email: "" });
+      setPartnerSince("");
+    } catch (err: any) {
+      console.error("Error unlinking partner:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateTogetherSince = async () => {
+    if (!partnerSince.trim()) return;
+
+    setLoading(true);
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) return;
+
+      await updateTogetherSince(user.id, partnerSince);
+      await loadProfile();
+    } catch (err: any) {
+      console.error("Error updating together since:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    await signOut();
+    router.push("/login");
   };
 
   return (
@@ -66,6 +205,7 @@ export default function PerfilPage() {
       <header className="px-6 pt-10 pb-6 flex flex-col gap-6 animate-fade-in">
         <div className="flex items-center justify-between">
           <button
+            type="button"
             onClick={() => router.back()}
             className="h-10 w-10 flex items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-black/5 active:scale-95 transition-all"
           >
@@ -75,6 +215,7 @@ export default function PerfilPage() {
             Mi Perfil
           </h1>
           <button
+            type="button"
             onClick={() => setIsEditingProfile(true)}
             className="h-10 w-10 flex items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-black/5 active:scale-95 transition-all text-gray-400"
           >
@@ -88,6 +229,7 @@ export default function PerfilPage() {
           <div className="relative flex flex-col h-full px-6 pt-6">
             <div className="absolute top-6 right-6 z-110">
               <button
+                type="button"
                 onClick={() => setIsEditingProfile(false)}
                 className="h-10 w-10 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-md shadow-sm ring-1 ring-black/5 active:scale-95 transition-all"
               >
@@ -110,17 +252,21 @@ export default function PerfilPage() {
                   <div className="h-24 w-24 rounded-[32px] bg-white shadow-md flex items-center justify-center text-gray-300 ring-4 ring-white">
                     <User className="h-12 w-12" />
                   </div>
-                  <button className="absolute -bottom-2 -right-2 h-10 w-10 rounded-full bg-[#F43E5C] text-white flex items-center justify-center shadow-lg border-4 border-white active:scale-90 transition-all">
+                  <button
+                    type="button"
+                    className="absolute -bottom-2 -right-2 h-10 w-10 rounded-full bg-[#F43E5C] text-white flex items-center justify-center shadow-lg border-4 border-white active:scale-90 transition-all"
+                  >
                     <Camera className="h-4 w-4" />
                   </button>
                 </div>
               </div>
 
               <div className="space-y-3">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#F43E5C] ml-1">
+                <label htmlFor="fullName" className="text-[10px] font-black uppercase tracking-[0.2em] text-[#F43E5C] ml-1">
                   Nombre Completo
                 </label>
                 <Input
+                  id="fullName"
                   value={userName}
                   onChange={(e) => setUserName(e.target.value)}
                   className="h-14 rounded-2xl border-none bg-white px-6 shadow-sm ring-1 ring-black/5 focus-visible:ring-[#F43E5C]/40 text-base font-bold"
@@ -128,10 +274,12 @@ export default function PerfilPage() {
               </div>
 
               <div className="space-y-3">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#F43E5C] ml-1">
+                <label htmlFor="email" className="text-[10px] font-black uppercase tracking-[0.2em] text-[#F43E5C] ml-1">
                   Correo Electrónico
                 </label>
                 <Input
+                  id="email"
+                  type="email"
                   value={userEmail}
                   onChange={(e) => setUserEmail(e.target.value)}
                   className="h-14 rounded-2xl border-none bg-white px-6 shadow-sm ring-1 ring-black/5 focus-visible:ring-[#F43E5C]/40 text-base font-bold"
@@ -139,11 +287,12 @@ export default function PerfilPage() {
               </div>
 
               <div className="space-y-3">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#F43E5C] ml-1">
+                <label htmlFor="password" className="text-[10px] font-black uppercase tracking-[0.2em] text-[#F43E5C] ml-1">
                   Nueva Contraseña
                 </label>
                 <div className="relative">
                   <Input
+                    id="password"
                     type="password"
                     value={userPass}
                     onChange={(e) => setUserPass(e.target.value)}
@@ -156,6 +305,7 @@ export default function PerfilPage() {
 
             <footer className="fixed bottom-0 left-0 right-0 p-6 bg-[#F8F5F6]/90 backdrop-blur-xl border-t border-black/5">
               <Button
+                type="button"
                 onClick={() => setIsEditingProfile(false)}
                 className="h-16 w-full rounded-[24px] bg-[#F43E5C] text-white font-black shadow-2xl shadow-[#F43E5C]/30 active:scale-95 transition-all text-lg"
               >
@@ -173,30 +323,39 @@ export default function PerfilPage() {
             <User className="h-12 w-12" />
           </div>
           <h2 className="text-2xl font-black text-gray-900 tracking-tight">
-            {userName}
+            {userName || "Bienvenido"}
           </h2>
           <p className="text-sm font-medium text-gray-400 mt-1">{userEmail}</p>
 
-          <div className="w-full h-px bg-black/5 my-6" />
-
-          <div className="w-full space-y-3">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
-              Mi código de invitación
-            </p>
-            <div
-              onClick={copyCode}
-              className="w-full h-14 rounded-2xl bg-[#F8F5F6] flex items-center justify-between px-6 cursor-pointer active:scale-[0.98] transition-all group"
-            >
-              <span className="text-base font-bold text-gray-700 tracking-wider font-mono">
-                {userData.myCode}
-              </span>
-              {copied ? (
-                <Check className="h-5 w-5 text-green-500 animate-in zoom-in duration-300" />
-              ) : (
-                <Copy className="h-5 w-5 text-gray-300 group-hover:text-[#F43E5C] transition-colors" />
+          {!hasPartner && (
+            <div className="w-full space-y-3 mt-6">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
+                Mi código de invitación
+              </p>
+              <div
+                type="button"
+                onClick={copyCode}
+                className="w-full h-14 rounded-2xl bg-[#F8F5F6] flex items-center justify-between px-6 cursor-pointer active:scale-[0.98] transition-all group"
+              >
+                <span className="text-base font-bold text-gray-700 tracking-wider font-mono">
+                  {userData.myCode}
+                </span>
+                {copied ? (
+                  <Check className="h-5 w-5 text-green-500 animate-in zoom-in duration-300" />
+                ) : (
+                  <Copy className="h-5 w-5 text-gray-300 group-hover:text-[#F43E5C] transition-colors" />
+                )}
+              </div>
+              
+              {error && (
+                <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-xl text-center">
+                  <p className="text-sm text-red-600 font-medium">{error}</p>
+                </div>
               )}
             </div>
-          </div>
+          )}
+
+          <div className="w-full h-px bg-black/5 my-6" />
         </section>
 
         {/* Partner Section */}
@@ -207,6 +366,7 @@ export default function PerfilPage() {
             </h3>
             {hasPartner && (
               <button
+                type="button"
                 onClick={() => setIsEditingPartner(true)}
                 className="text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-[#F43E5C] transition-colors"
               >
@@ -235,6 +395,7 @@ export default function PerfilPage() {
                 </div>
               </div>
             </div>
+          </div>
           ) : (
             <div className="bg-white rounded-[40px] p-8 shadow-xl shadow-black/2 ring-1 ring-black/3 text-center space-y-6">
               <div className="h-20 w-20 rounded-[28px] bg-gray-50 flex items-center justify-center text-gray-300 mx-auto">
@@ -245,8 +406,7 @@ export default function PerfilPage() {
                   Unirme a mi pareja
                 </h4>
                 <p className="text-sm font-medium text-gray-500 px-4">
-                  Ingresa el código de invitación de tu pareja para comenzar a
-                  compartir momentos.
+                  Ingresa el código de invitación de tu pareja para comenzar a compartir momentos.
                 </p>
               </div>
 
@@ -257,11 +417,22 @@ export default function PerfilPage() {
                   placeholder="Ej: AM-0000-XX"
                   className="h-14 rounded-2xl border-none bg-[#F8F5F6] px-6 text-center text-base font-bold tracking-wider placeholder:tracking-normal font-mono"
                 />
-                <Button className="w-full h-14 rounded-2xl bg-gray-900 hover:bg-gray-800 text-white font-black text-base shadow-lg active:scale-95 transition-all">
-                  Conectar ahora
-                  <ArrowRight className="h-5 w-5 ml-2" />
+                <Button
+                  type="button"
+                  onClick={handleLinkPartner}
+                  disabled={loading || !inviteCode.trim()}
+                  className="w-full h-14 rounded-2xl bg-gray-900 hover:bg-gray-800 text-white font-black text-base shadow-lg active:scale-95 transition-all"
+                >
+                  {loading ? "Vinculando..." : "Conectar ahora"}
+                  {!loading && <ArrowRight className="h-5 w-5 ml-2" />}
                 </Button>
               </div>
+
+              {error && (
+                <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-xl text-center">
+                  <p className="text-sm text-red-600 font-medium">{error}</p>
+                </div>
+              )}
             </div>
           )}
         </section>
@@ -271,6 +442,7 @@ export default function PerfilPage() {
             <div className="relative flex flex-col h-full px-6 pt-6">
               <div className="absolute top-6 right-6 z-110">
                 <button
+                  type="button"
                   onClick={() => setIsEditingPartner(false)}
                   className="h-10 w-10 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-md shadow-sm ring-1 ring-black/5 active:scale-95 transition-all"
                 >
@@ -289,11 +461,13 @@ export default function PerfilPage() {
 
               <div className="flex-1 overflow-y-auto space-y-6 pb-32 -mx-6 px-6">
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#F43E5C] ml-1">
+                  <label htmlFor="togetherSince" className="text-[10px] font-black uppercase tracking-[0.2em] text-[#F43E5C] ml-1">
                     Juntos desde
                   </label>
                   <div className="relative">
                     <Input
+                      id="togetherSince"
+                      type="date"
                       value={partnerSince}
                       onChange={(e) => setPartnerSince(e.target.value)}
                       placeholder="Ej: 15 de Octubre, 2021"
@@ -305,14 +479,10 @@ export default function PerfilPage() {
 
                 <div className="pt-8 flex flex-col items-center">
                   <button
+                    type="button"
                     onClick={() => {
-                      if (
-                        confirm(
-                          "¿Estás seguro de que quieres desvincular a tu pareja? Esta acción no se puede deshacer fácilmente.",
-                        )
-                      ) {
-                        setHasPartner(false);
-                        setIsEditingPartner(false);
+                      if (confirm("¿Estás seguro de que quieres desvincular a tu pareja? Esta acción no se puede deshacer fácilmente.")) {
+                        handleUnlinkPartner();
                       }
                     }}
                     className="flex items-center gap-2 text-red-500 font-bold text-sm px-4 py-2 rounded-xl hover:bg-red-50 transition-colors"
@@ -321,62 +491,66 @@ export default function PerfilPage() {
                     Desvincular a mi pareja
                   </button>
                   <p className="text-[10px] text-gray-400 font-medium mt-2 text-center px-8">
-                    Al desvincularte, dejarás de compartir momentos y planes con
-                    esta persona.
+                    Al desvincularte, dejarás de compartir momentos y planes con esta persona.
                   </p>
                 </div>
               </div>
-
-              <footer className="fixed bottom-0 left-0 right-0 p-6 bg-[#F8F5F6]/90 backdrop-blur-xl border-t border-black/5">
-                <Button
-                  onClick={() => setIsEditingPartner(false)}
-                  className="h-16 w-full rounded-[24px] bg-[#F43E5C] text-white font-black shadow-2xl shadow-[#F43E5C]/30 active:scale-95 transition-all text-lg"
-                >
-                  Guardar Fecha
-                </Button>
-              </footer>
             </div>
-          </DialogContent>
+
+            <footer className="fixed bottom-0 left-0 right-0 p-6 bg-[#F8F5F6]/90 backdrop-blur-xl border-t border-black/5">
+              <Button
+                type="button"
+                onClick={() => {
+                  handleUpdateTogetherSince();
+                  setIsEditingPartner(false);
+                }}
+                className="h-16 w-full rounded-[24px] bg-[#F43E5C] text-white font-black shadow-2xl shadow-[#F43E5C]/30 active:scale-95 transition-all text-lg"
+              >
+                Guardar Fecha
+              </Button>
+            </footer>
+          </div>
         </Dialog>
-
-        {/* Action Buttons */}
-        <section className="flex flex-col gap-3 animate-slide-up delay-600">
-          <Button
-            variant="ghost"
-            className="h-14 w-full rounded-2xl justify-between px-6 bg-white shadow-sm ring-1 ring-black/5 hover:bg-gray-50 group transition-all"
-          >
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 group-hover:text-gray-900 transition-colors">
-                <Mail className="h-4 w-4" />
-              </div>
-              <span className="text-sm font-bold text-gray-700">
-                Soporte y Ayuda
-              </span>
-            </div>
-            <ArrowRight className="h-4 w-4 text-gray-300" />
-          </Button>
-
-          <Button
-            variant="ghost"
-            onClick={() => router.push("/login")}
-            className="h-14 w-full rounded-2xl justify-start px-6 bg-white shadow-sm ring-1 ring-black/5 hover:bg-red-50 group transition-all"
-          >
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-lg bg-red-50 flex items-center justify-center text-red-400 group-hover:text-red-500 transition-colors">
-                <LogOut className="h-4 w-4" />
-              </div>
-              <span className="text-sm font-bold text-red-500">
-                Cerrar Sesión
-              </span>
-            </div>
-          </Button>
-        </section>
-
-        {/* Version Info */}
-        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-300 text-center mt-4 animate-fade-in delay-800">
-          Amoura v1.0.4 • Hecho con amor
-        </p>
       </div>
+
+      {/* Action Buttons */}
+      <section className="flex flex-col gap-3 animate-slide-up delay-600">
+        <Button
+          variant="ghost"
+          className="h-14 w-full rounded-2xl justify-between px-6 bg-white shadow-sm ring-1 ring-black/5 hover:bg-gray-50 group transition-all"
+        >
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 group-hover:text-gray-900 transition-colors">
+              <Mail className="h-4 w-4" />
+            </div>
+            <span className="text-sm font-bold text-gray-700">
+              Soporte y Ayuda
+            </span>
+          </div>
+          <ArrowRight className="h-4 w-4 text-gray-300" />
+        </Button>
+
+        <Button
+          variant="ghost"
+          type="button"
+          onClick={handleLogout}
+          className="h-14 w-full rounded-2xl justify-start px-6 bg-white shadow-sm ring-1 ring-black/5 hover:bg-red-50 group transition-all"
+        >
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-lg bg-red-50 flex items-center justify-center text-red-400 group-hover:text-red-500 transition-colors">
+              <LogOut className="h-4 w-4" />
+            </div>
+            <span className="text-sm font-bold text-red-500">
+              Cerrar Sesión
+            </span>
+          </div>
+        </Button>
+      </section>
+
+      {/* Version Info */}
+      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-300 text-center mt-4 animate-fade-in delay-800">
+        Amoura v1.0.4 • Hecho con amor
+      </p>
     </main>
   );
 }
