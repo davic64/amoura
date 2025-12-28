@@ -24,7 +24,7 @@ CREATE INDEX IF NOT EXISTS profiles_user_id_idx ON profiles(user_id);
 CREATE INDEX IF NOT EXISTS profiles_invite_code_idx ON profiles(invite_code);
 CREATE INDEX IF NOT EXISTS profiles_partner_id_idx ON profiles(partner_id);
 
--- PARTNERS TABLE (Partner tracking/history)
+-- PARTNERS TABLE
 CREATE TABLE IF NOT EXISTS partners (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id_1 UUID REFERENCES profiles(id) NOT NULL,
@@ -106,95 +106,135 @@ ALTER TABLE events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE plans ENABLE ROW LEVEL SECURITY;
 ALTER TABLE miss_you_logs ENABLE ROW LEVEL SECURITY;
 
+-- ============================================
 -- POLICIES PROFILES
-CREATE POLICY "Users can view own profile" ON profiles
-  FOR SELECT USING (auth.uid() = user_id);
+-- ============================================
 
+-- Users can view own profile
+CREATE POLICY "Users can view own profile" ON profiles
+  FOR SELECT
+  USING (auth.uid() = user_id);
+
+-- Users can view linked partner
 CREATE POLICY "Users can view linked partner" ON profiles
-  FOR SELECT USING (
+  FOR SELECT
+  USING (
+    auth.uid() = user_id OR 
     auth.uid() = partner_id OR
     EXISTS (
-      SELECT 1 FROM profiles p
-      WHERE p.user_id = auth.uid() AND p.partner_id = profiles.id
+      SELECT 1 FROM profiles p 
+      WHERE p.user_id = auth.uid() AND p.partner_id = profiles.partner_id
     )
   );
 
-CREATE POLICY "Users can update own profile" ON profiles
-  FOR UPDATE USING (auth.uid() = user_id);
-
+-- Users can insert own profile
 CREATE POLICY "Users can insert own profile" ON profiles
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
+  FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
 
+-- Users can update own profile
+CREATE POLICY "Users can update own profile" ON profiles
+  FOR UPDATE
+  USING (auth.uid() = user_id);
+
+-- ============================================
 -- POLICIES PARTNERS
+-- ============================================
+
+-- Users can view own partners
 CREATE POLICY "Users can view own partners" ON partners
-  FOR SELECT USING (
-    user_id_1 = auth.uid() OR
-    user_id_2 = auth.uid()
-  );
+  FOR SELECT
+  USING (user_id_1 = auth.uid() OR user_id_2 = auth.uid());
 
+-- Users can insert own partners
 CREATE POLICY "Users can insert own partners" ON partners
-  FOR INSERT WITH CHECK (
-    user_id_1 = auth.uid() OR
-    user_id_2 = auth.uid()
-  );
+  FOR INSERT
+  WITH CHECK (user_id_1 = auth.uid() OR user_id_2 = auth.uid());
 
+-- ============================================
 -- POLICIES MOODS
+-- ============================================
+
+-- Users can view partner moods
 CREATE POLICY "Users can view partner moods" ON moods
-  FOR SELECT USING (
+  FOR SELECT
+  USING (
     user_id = auth.uid() OR
-    user_id IN (
-      SELECT p.partner_id FROM profiles p WHERE p.user_id = auth.uid()
-    )
+    user_id IN (SELECT partner_id FROM profiles WHERE user_id = auth.uid())
   );
 
+-- Users can insert own moods
 CREATE POLICY "Users can insert own moods" ON moods
-  FOR INSERT WITH CHECK (user_id = auth.uid());
+  FOR INSERT
+  WITH CHECK (user_id = auth.uid());
 
+-- ============================================
 -- POLICIES EVENTS
+-- ============================================
+
+-- Users can view partner events
 CREATE POLICY "Users can view partner events" ON events
-  FOR SELECT USING (
-    created_by = auth.uid() OR
-    created_by IN (
-      SELECT p.partner_id FROM profiles p WHERE p.user_id = auth.uid()
-    )
+  FOR SELECT
+  USING (
+    created_by = auth.uid() OR 
+    created_by IN (SELECT partner_id FROM profiles WHERE user_id = auth.uid())
   );
 
+-- Users can insert own events
 CREATE POLICY "Users can insert own events" ON events
-  FOR INSERT WITH CHECK (created_by = auth.uid());
+  FOR INSERT
+  WITH CHECK (created_by = auth.uid());
 
+-- Only creator can update events
 CREATE POLICY "Only creator can update events" ON events
-  FOR UPDATE USING (created_by = auth.uid());
+  FOR UPDATE
+  USING (created_by = auth.uid());
 
+-- Only creator can delete events
 CREATE POLICY "Only creator can delete events" ON events
-  FOR DELETE USING (created_by = auth.uid());
+  FOR DELETE
+  USING (created_by = auth.uid());
 
+-- ============================================
 -- POLICIES PLANS
+-- ============================================
+
+-- Users can view partner plans
 CREATE POLICY "Users can view partner plans" ON plans
-  FOR SELECT USING (
-    created_by = auth.uid() OR
-    created_by IN (
-      SELECT p.partner_id FROM profiles p WHERE p.user_id = auth.uid()
-    )
+  FOR SELECT
+  USING (
+    created_by = auth.uid() OR 
+    created_by IN (SELECT partner_id FROM profiles WHERE user_id = auth.uid())
   );
 
+-- Users can insert own plans
 CREATE POLICY "Users can insert own plans" ON plans
-  FOR INSERT WITH CHECK (created_by = auth.uid());
+  FOR INSERT
+  WITH CHECK (created_by = auth.uid());
 
+-- Only creator can update plans
 CREATE POLICY "Only creator can update plans" ON plans
-  FOR UPDATE USING (created_by = auth.uid());
+  FOR UPDATE
+  USING (created_by = auth.uid());
 
+-- Only creator can delete plans
 CREATE POLICY "Only creator can delete plans" ON plans
-  FOR DELETE USING (created_by = auth.uid());
+  FOR DELETE
+  USING (created_by = auth.uid());
 
+-- ============================================
 -- POLICIES MISS_YOU_LOGS
-CREATE POLICY "Users can view own miss_you_logs" ON miss_you_logs
-  FOR SELECT USING (
-    sender_id = auth.uid() OR
-    receiver_id = auth.uid()
-  );
+-- ============================================
 
-CREATE POLICY "Users can insert own miss_you_logs" ON miss_you_logs
-  FOR INSERT WITH CHECK (sender_id = auth.uid());
+-- Users can view own miss you logs
+CREATE POLICY "Users can view own miss you logs" ON miss_you_logs
+  FOR SELECT
+  USING (sender_id = auth.uid());
+
+-- Users can insert own miss you logs
+CREATE POLICY "Users can insert own miss you logs" ON miss_you_logs
+  FOR INSERT
+  WITH CHECK (sender_id = auth.uid());
 
 -- ============================================
 -- FUNCTIONS
@@ -209,39 +249,27 @@ DECLARE
   exists BOOLEAN;
 BEGIN
   LOOP
-    code := 'AM-' || substr(chars, (random() * length(chars) + 1)::INT, 1) ||
-            substr(chars, (random() * length(chars) + 1)::INT, 1) ||
-            substr(chars, (random() * length(chars) + 1)::INT, 1) ||
-            substr(chars, (random() * length(chars) + 1)::INT, 1) ||
-            '-' ||
-            substr(chars, (random() * length(chars) + 1)::INT, 1) ||
-            substr(chars, (random() * length(chars) + 1)::INT, 1);
+    code := 'AM-' || substr(chars, (random() * length(chars) + 1)::INT, 1) || '-' || substr(chars, (random() * length(chars) + 1)::INT, 1) || substr(chars, (random() * length(chars) + 1)::INT, 1) || substr(chars, (random() * length(chars) + 1)::INT, 1);
     
     SELECT EXISTS(SELECT 1 FROM profiles WHERE invite_code = code) INTO exists;
     
-    IF NOT exists THEN
-      RETURN code;
-    END IF;
+    EXIT WHEN NOT exists;
   END LOOP;
+  
+  RETURN code;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Link partners (atomic transaction)
 CREATE OR REPLACE FUNCTION link_partners(user1_id UUID, user2_id UUID)
 RETURNS VOID AS $$
 BEGIN
-  UPDATE profiles 
-  SET partner_id = user2_id
-  WHERE user_id = user1_id;
+  UPDATE profiles SET partner_id = user2_id WHERE user_id = user1_id;
+  UPDATE profiles SET partner_id = user1_id WHERE user_id = user2_id;
   
-  UPDATE profiles 
-  SET partner_id = user1_id
-  WHERE user_id = user2_id;
-  
-  INSERT INTO partners (user_id_1, user_id_2, status)
-  VALUES (user1_id, user2_id, 'accepted');
+  INSERT INTO partners (user_id_1, user_id_2, status) VALUES (user1_id, user2_id, 'accepted');
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Calculate days together automatically
 CREATE OR REPLACE FUNCTION calculate_days_together()
@@ -250,21 +278,6 @@ BEGIN
   IF NEW.together_since IS NOT NULL THEN
     NEW.days_together := FLOOR(DATE_PART('day', NOW() - NEW.together_since));
   END IF;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Create profile automatically on user registration
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER AS $$
-BEGIN
-  INSERT INTO profiles (user_id, email, full_name, invite_code)
-  VALUES (
-    NEW.id,
-    NEW.email,
-    NEW.raw_user_meta_data->>'full_name',
-    generate_invite_code()
-  );
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -280,22 +293,22 @@ CREATE TRIGGER update_days_together
   FOR EACH ROW
   EXECUTE FUNCTION calculate_days_together();
 
--- Trigger to create profile automatically when user registers
+-- Create profile automatically on user registration
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW
-  EXECUTE FUNCTION public.handle_new_user();
-
--- ============================================
--- SAMPLE DATA (Optional - for testing)
--- ============================================
-
--- Uncomment to insert sample data
--- INSERT INTO profiles (user_id, email, full_name, invite_code, together_since)
--- VALUES 
---   ('00000000-0000-0000-0000-000000000001', 'user1@example.com', 'User One', 'AM-TEST-01', '2021-10-15'),
---   ('00000000-0000-0000-0000-000000000002', 'user2@example.com', 'User Two', 'AM-TEST-02', '2021-10-15');
--- 
--- UPDATE profiles SET partner_id = '00000000-0000-0000-0000-000000000002' WHERE user_id = '00000000-0000-0000-0000-000000000001';
--- UPDATE profiles SET partner_id = '00000000-0000-0000-0000-000000000001' WHERE user_id = '00000000-0000-0000-0000-000000000002';
+  EXECUTE FUNCTION generate_invite_code() AS invite_code,
+    full_name = NEW.raw_user_meta_data->>'full_name';
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW
+  EXECUTE FUNCTION generate_invite_code() AS invite_code,
+    full_name = NEW.raw_user_meta_data->>'full_name';
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW
+  EXECUTE FUNCTION generate_invite_code() AS invite_code,
+    full_name = NEW.raw_user_meta_data->>'full_name';
