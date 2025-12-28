@@ -138,10 +138,10 @@ export default function PlanesPage() {
         return {
           ...list,
           items: list.items.map((item) =>
-            item.id === itemId ? { ...item, completed: !item.completed } : item
+            item.id === itemId ? { ...item, completed: !item.completed } : item,
           ),
         };
-      })
+      }),
     );
   };
 
@@ -160,7 +160,7 @@ export default function PlanesPage() {
       prev.map((list) => {
         if (list.id !== listId) return list;
         return { ...list, items: [newItem, ...list.items] };
-      })
+      }),
     );
 
     setNewItemText("");
@@ -173,7 +173,7 @@ export default function PlanesPage() {
       prev.map((list) => {
         if (list.id !== listId) return list;
         return { ...list, items: list.items.filter((i) => i.id !== itemId) };
-      })
+      }),
     );
   };
 
@@ -185,7 +185,7 @@ export default function PlanesPage() {
         listBg: l.bgColor,
         listColor: l.color,
         listId: l.id,
-      }))
+      })),
     );
     return all.sort((a, b) => b.timestamp - a.timestamp).slice(0, 3);
   }, [lists]);
@@ -437,7 +437,7 @@ export default function PlanesPage() {
                       "flex items-center justify-between p-4 rounded-2xl transition-all group",
                       item.completed
                         ? "bg-white/40 opacity-60"
-                        : "bg-white shadow-sm ring-1 ring-black/5"
+                        : "bg-white shadow-sm ring-1 ring-black/5",
                     )}
                   >
                     <button
@@ -457,7 +457,7 @@ export default function PlanesPage() {
                           "text-sm font-bold tracking-tight truncate",
                           item.completed
                             ? "text-gray-400 line-through"
-                            : "text-gray-900"
+                            : "text-gray-900",
                         )}
                       >
                         {item.text}

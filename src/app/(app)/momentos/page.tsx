@@ -110,7 +110,7 @@ export default function MomentosPage() {
   const [newUnlockDate, setNewUnlockDate] = useState("");
   const [tempComments, setTempComments] = useState<Record<string, string>>({});
   const [expandedMoments, setExpandedMoments] = useState<Set<string>>(
-    new Set()
+    new Set(),
   );
 
   const today = new Date().toISOString().split("T")[0];
@@ -141,8 +141,8 @@ export default function MomentosPage() {
                 },
               ],
             }
-          : m
-      )
+          : m,
+      ),
     );
 
     setTempComments({ ...tempComments, [momentId]: "" });
@@ -208,8 +208,8 @@ export default function MomentosPage() {
               isSecret: newIsSecret,
               unlockDate: newIsSecret ? newUnlockDate : undefined,
             }
-          : m
-      )
+          : m,
+      ),
     );
     resetForm();
     setEditingMoment(null);
@@ -325,7 +325,7 @@ export default function MomentosPage() {
                   onClick={() => fileInputRef.current?.click()}
                   className={cn(
                     "relative flex flex-col items-center justify-center gap-3 rounded-[40px] border-2 border-dashed border-black/5 bg-white/50 p-10 transition-all hover:bg-white active:scale-[0.98] overflow-hidden",
-                    newImage && "border-solid border-[#F43E5C]/10"
+                    newImage && "border-solid border-[#F43E5C]/10",
                   )}
                 >
                   {newImage ? (
@@ -421,7 +421,7 @@ export default function MomentosPage() {
             ? Math.ceil(
                 (new Date(m.unlockDate!).getTime() -
                   new Date(today).getTime()) /
-                  (1000 * 60 * 60 * 24)
+                  (1000 * 60 * 60 * 24),
               )
             : 0;
 
@@ -433,7 +433,7 @@ export default function MomentosPage() {
                 "overflow-hidden transition-all duration-300 rounded-[32px] border-none shadow-md ring-1 ring-black/5 animate-slide-up",
                 isLocked
                   ? "bg-linear-to-br from-gray-900 to-gray-800 text-white"
-                  : "bg-white"
+                  : "bg-white",
               )}
             >
               <div className="relative aspect-square w-full overflow-hidden">
@@ -477,7 +477,7 @@ export default function MomentosPage() {
                           "flex h-10 w-10 items-center justify-center rounded-xl backdrop-blur-md border border-white/20 shadow-lg active:scale-90 transition-all",
                           isLocked
                             ? "bg-white/10 text-white"
-                            : "bg-white/40 text-gray-900"
+                            : "bg-white/40 text-gray-900",
                         )}
                       >
                         <MoreVertical className="h-5 w-5" />
@@ -511,7 +511,7 @@ export default function MomentosPage() {
                     <h3
                       className={cn(
                         "text-xl font-black tracking-tight leading-tight",
-                        isLocked ? "text-white" : "text-gray-900"
+                        isLocked ? "text-white" : "text-gray-900",
                       )}
                     >
                       {isLocked ? "Momento Secreta" : m.title}
@@ -529,7 +529,7 @@ export default function MomentosPage() {
                   <p
                     className={cn(
                       "text-sm leading-relaxed font-medium",
-                      isLocked ? "text-gray-400 italic" : "text-gray-600"
+                      isLocked ? "text-gray-400 italic" : "text-gray-600",
                     )}
                   >
                     {isLocked
@@ -571,7 +571,7 @@ export default function MomentosPage() {
                                     </span>
                                     <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">
                                       {new Date(
-                                        comment.date
+                                        comment.date,
                                       ).toLocaleDateString("es-ES", {
                                         day: "2-digit",
                                         month: "short",

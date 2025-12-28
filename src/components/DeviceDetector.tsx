@@ -24,9 +24,7 @@ export default function DeviceDetector() {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-white px-4">
       <div className="max-w-md text-center">
-        <h1 className="mb-4 text-2xl font-bold text-gray-900">
-          📱 Amoura
-        </h1>
+        <h1 className="mb-4 text-2xl font-bold text-gray-900">📱 Amoura</h1>
         <p className="text-gray-600">
           Esta aplicación solo está disponible para dispositivos móviles.
         </p>

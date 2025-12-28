@@ -1,20 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { AlertCircle, ArrowRight, Lock, Mail } from "lucide-react";
 import Image from "next/image";
-import { Mail, Lock, ArrowRight } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+import { type AuthError, signIn } from "@/lib/auth";
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [isReady, setIsReady] = useState(false);
+  const [error, setError] = useState("");
+  const [_isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     const checkReady = () => {
@@ -27,19 +28,25 @@ export default function LoginPage() {
     return () => clearInterval(timer);
   }, []);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
     setLoading(true);
-    // Simulate login for UX
-    setTimeout(() => {
-      setLoading(false);
+
+    try {
+      await signIn(email, password);
       router.push("/dashboard");
-    }, 1500);
+    } catch (err) {
+      const authError = err as AuthError;
+      setError(authError.message || "Error al iniciar sesión");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <main
-      className="h-svh bg-[#F8F5F6] flex flex-col items-center justify-center px-6 relative overflow-hidden"
+      className="min-h-svh bg-[#F8F5F6] flex flex-col items-center justify-center px-6 py-12 relative overflow-y-auto overflow-x-hidden"
       style={{
         paddingTop: "env(safe-area-inset-top)",
         paddingBottom: "env(safe-area-inset-bottom)",
@@ -50,8 +57,8 @@ export default function LoginPage() {
       <div className="fixed -bottom-[15%] -right-[15%] w-[80%] h-[50%] bg-linear-to-br from-[#B345D1]/15 to-transparent blur-[120px] rounded-full pointer-events-none" />
 
       <div className="w-full max-w-sm z-10">
-        <header className="flex flex-col items-center text-center mb-10 animate-fade-in">
-          <div className="h-20 w-20 rounded-[24px] overflow-hidden shadow-xl shadow-[#F43E5C]/20 mb-6">
+        <header className="flex flex-col items-center text-center mb-6 sm:mb-10 animate-fade-in">
+          <div className="h-16 sm:h-20 w-16 sm:w-20 rounded-[20px] sm:rounded-[24px] overflow-hidden shadow-xl shadow-[#F43E5C]/20 mb-4 sm:mb-6">
             <Image
               src="/amoura_icon.png"
               alt="Amoura Logo"
@@ -60,22 +67,26 @@ export default function LoginPage() {
               className="w-full h-full object-cover"
             />
           </div>
-          <h1 className="text-4xl font-black text-gray-900 tracking-tight mb-2">
+          <h1 className="text-3xl sm:text-4xl font-black text-gray-900 tracking-tight mb-2">
             Amoura
           </h1>
-          <p className="text-sm font-medium text-gray-500">
+          <p className="text-xs sm:text-sm font-medium text-gray-500">
             Tu mundo compartido, con amor.
           </p>
         </header>
 
-        <div className="bg-white/70 backdrop-blur-2xl rounded-[40px] p-8 shadow-xl shadow-black/3 ring-1 ring-black/5 animate-scale-in">
+        <div className="bg-white/70 backdrop-blur-2xl rounded-[32px] sm:rounded-[40px] p-6 sm:p-8 shadow-xl shadow-black/3 ring-1 ring-black/5 animate-scale-in">
           <form onSubmit={handleLogin} className="space-y-5">
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#F43E5C] ml-1">
+              <label
+                htmlFor="email"
+                className="text-[10px] font-black uppercase tracking-[0.2em] text-[#F43E5C] ml-1"
+              >
                 Correo Electrónico
               </label>
               <div className="relative">
                 <Input
+                  id="email"
                   type="email"
                   placeholder="hola@amor.com"
                   value={email}
@@ -87,11 +98,15 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#F43E5C] ml-1">
+              <label
+                htmlFor="password"
+                className="text-[10px] font-black uppercase tracking-[0.2em] text-[#F43E5C] ml-1"
+              >
                 Contraseña
               </label>
               <div className="relative">
                 <Input
+                  id="password"
                   type="password"
                   placeholder="••••••••"
                   value={password}
@@ -101,6 +116,13 @@ export default function LoginPage() {
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
               </div>
             </div>
+
+            {error && (
+              <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl">
+                <AlertCircle className="h-4 w-4 text-red-500 shrink-0" />
+                <p className="text-sm text-red-600">{error}</p>
+              </div>
+            )}
 
             <Button
               disabled={loading}
@@ -121,7 +143,7 @@ export default function LoginPage() {
           </form>
         </div>
 
-        <p className="mt-10 text-center text-sm font-medium text-gray-500 animate-fade-in">
+        <p className="mt-6 sm:mt-10 text-center text-sm font-medium text-gray-500 animate-fade-in">
           ¿No tienes cuenta?{" "}
           <Link
             href="/register"

@@ -308,7 +308,7 @@ export default function PerfilPage() {
                     onClick={() => {
                       if (
                         confirm(
-                          "¿Estás seguro de que quieres desvincular a tu pareja? Esta acción no se puede deshacer fácilmente."
+                          "¿Estás seguro de que quieres desvincular a tu pareja? Esta acción no se puede deshacer fácilmente.",
                         )
                       ) {
                         setHasPartner(false);

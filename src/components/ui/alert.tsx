@@ -15,7 +15,7 @@ const alertVariants = cva(
     defaultVariants: {
       variant: "default",
     },
-  }
+  },
 );
 
 function Alert({
@@ -52,7 +52,7 @@ function AlertDescription({
       data-slot="alert-description"
       className={cn(
         "text-muted-foreground text-xs [&_p]:leading-relaxed",
-        className
+        className,
       )}
       {...props}
     />

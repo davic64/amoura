@@ -62,7 +62,7 @@ export default function CuponesPage() {
 
   const redeemCoupon = (id: string) => {
     setCoupons((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, isUsed: true } : c))
+      prev.map((c) => (c.id === id ? { ...c, isUsed: true } : c)),
     );
   };
 
@@ -127,7 +127,7 @@ export default function CuponesPage() {
             style={{ animationDelay: `${400 + index * 150}ms` }}
             className={cn(
               "relative bg-white rounded-[32px] flex items-stretch transition-all overflow-hidden animate-slide-up",
-              coupon.isUsed ? "opacity-60" : "shadow-sm shadow-[#F43E5C]/10"
+              coupon.isUsed ? "opacity-60" : "shadow-sm shadow-[#F43E5C]/10",
             )}
           >
             {/* Ticket Notches */}
@@ -138,7 +138,7 @@ export default function CuponesPage() {
             <div
               className={cn(
                 "w-24 shrink-0 flex items-center justify-center text-4xl",
-                coupon.isUsed ? "bg-gray-50/50" : "bg-[#FFE5EB]/30"
+                coupon.isUsed ? "bg-gray-50/50" : "bg-[#FFE5EB]/30",
               )}
             >
               {coupon.icon}
@@ -153,7 +153,7 @@ export default function CuponesPage() {
                 <h3
                   className={cn(
                     "text-[17px] font-bold leading-[1.3] text-gray-900 tracking-tight",
-                    coupon.isUsed && "text-gray-400 line-through"
+                    coupon.isUsed && "text-gray-400 line-through",
                   )}
                 >
                   {coupon.title}
@@ -279,7 +279,7 @@ export default function CuponesPage() {
                           "h-12 w-12 flex items-center justify-center rounded-xl text-xl transition-all active:scale-90",
                           newEmoji === emoji
                             ? "bg-[#F43E5C] text-white shadow-lg shadow-[#F43E5C]/20"
-                            : "bg-white ring-1 ring-black/5 hover:bg-white"
+                            : "bg-white ring-1 ring-black/5 hover:bg-white",
                         )}
                       >
                         {emoji}

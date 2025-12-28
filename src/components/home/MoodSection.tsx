@@ -65,7 +65,7 @@ export function MoodSection() {
                       "flex flex-col items-center justify-center gap-2 rounded-3xl p-4 transition-all active:scale-95",
                       myMood.status === mood.status
                         ? "bg-white ring-2 ring-[#F43E5C] shadow-md"
-                        : "bg-white ring-1 ring-black/5 shadow-sm"
+                        : "bg-white ring-1 ring-black/5 shadow-sm",
                     )}
                   >
                     <span className="text-3xl">{mood.emoji}</span>

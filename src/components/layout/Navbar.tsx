@@ -46,26 +46,26 @@ export function Navbar() {
               href={item.href}
               className={cn(
                 "flex flex-col items-center justify-center gap-1.5 transition-all duration-300 active:scale-90",
-                "min-w-[70px] px-2 py-1"
+                "min-w-[70px] px-2 py-1",
               )}
             >
               <div
                 className={cn(
                   "flex h-8 w-12 items-center justify-center rounded-2xl transition-all duration-300",
-                  isActive ? "bg-[#FFE5EB] text-[#F43E5C]" : "text-gray-400"
+                  isActive ? "bg-[#FFE5EB] text-[#F43E5C]" : "text-gray-400",
                 )}
               >
                 <Icon
                   className={cn(
                     "h-5 w-5 transition-transform duration-300",
-                    isActive && "scale-110"
+                    isActive && "scale-110",
                   )}
                 />
               </div>
               <span
                 className={cn(
                   "text-[10px] font-bold tracking-tight transition-colors duration-300",
-                  isActive ? "text-[#F43E5C]" : "text-gray-400"
+                  isActive ? "text-[#F43E5C]" : "text-gray-400",
                 )}
               >
                 {item.label}
