@@ -31,7 +31,12 @@ const navItems = [
 export function Navbar() {
   const pathname = usePathname();
 
-  if (pathname === "/notifications") return null;
+  if (
+    pathname === "/notifications" ||
+    pathname === "/login" ||
+    pathname === "/register"
+  )
+    return null;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-black/5 bg-white/80 backdrop-blur-xl transition-all duration-300">
