@@ -11,6 +11,8 @@ export default function Splash() {
     const splashShown = sessionStorage.getItem("splashShown");
     if (splashShown) {
       setShowSplash(false);
+      // Ensure app is ready if splash is skipped
+      document.body.classList.add("is-ready");
     } else {
       sessionStorage.setItem("splashShown", "true");
     }

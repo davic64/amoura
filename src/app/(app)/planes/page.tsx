@@ -13,6 +13,12 @@ import {
   CheckCircle2,
   Circle,
   Heart,
+  Clock,
+  MapPin,
+  CalendarDays,
+  MessageCircle,
+  Zap,
+  History,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -33,6 +39,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+  DrawerFooter,
+} from "@/components/ui/drawer";
 import { cn } from "@/lib/utils";
 
 type ListItem = {
@@ -50,6 +64,16 @@ type QuickAccess = {
   items: ListItem[];
   color: string;
   bgColor: string;
+};
+
+type Appointment = {
+  id: string;
+  title: string;
+  date: string;
+  time: string;
+  location?: string;
+  status: "pending" | "accepted" | "rejected" | "proposed";
+  proposedBy: "me" | "partner";
 };
 
 const INITIAL_LISTS: QuickAccess[] = [
@@ -123,13 +147,110 @@ const INITIAL_LISTS: QuickAccess[] = [
   },
 ];
 
+const INITIAL_APPOINTMENTS: Appointment[] = [
+  {
+    id: "a0",
+    title: "Noche de Cine en Pareja",
+    date: "2025-12-29",
+    time: "19:00",
+    location: "Cinepolis Luxury",
+    status: "pending",
+    proposedBy: "partner",
+  },
+  {
+    id: "a1",
+    title: "Cena Romántica",
+    date: "2025-12-30",
+    time: "20:30",
+    location: "Restaurante La Vista",
+    status: "pending",
+    proposedBy: "me",
+  },
+  {
+    id: "a2",
+    title: "Picnic en el Parque",
+    date: "2025-12-31",
+    time: "16:00",
+    location: "Parque Central",
+    status: "accepted",
+    proposedBy: "partner",
+  },
+];
+
 export default function PlanesPage() {
   const [lists, setLists] = useState<QuickAccess[]>(INITIAL_LISTS);
+  const [appointments, setAppointments] =
+    useState<Appointment[]>(INITIAL_APPOINTMENTS);
   const [selectedList, setSelectedList] = useState<QuickAccess | null>(null);
   const [newItemText, setNewItemText] = useState("");
   const [newItemLink, setNewItemLink] = useState("");
   const [isAddingItem, setIsAddingItem] = useState(false);
+  const [isAddingAppointment, setIsAddingAppointment] = useState(false);
   const [targetListId, setTargetListId] = useState(INITIAL_LISTS[0].id);
+
+  // New appointment states
+  const [aptTitle, setAptTitle] = useState("");
+  const [aptDate, setAptDate] = useState("");
+  const [aptTime, setAptTime] = useState("");
+  const [aptLocation, setAptLocation] = useState("");
+
+  // Rescheduling states
+  const [reschedulingApt, setReschedulingApt] = useState<Appointment | null>(
+    null
+  );
+  const [newAptDate, setNewAptDate] = useState("");
+  const [newAptTime, setNewAptTime] = useState("");
+
+  // Detail states
+  const [selectedApt, setSelectedApt] = useState<Appointment | null>(null);
+
+  const proposeNewTime = () => {
+    if (!reschedulingApt || !newAptDate || !newAptTime) return;
+
+    setAppointments(
+      appointments.map((apt) =>
+        apt.id === reschedulingApt.id
+          ? {
+              ...apt,
+              date: newAptDate,
+              time: newAptTime,
+              status: "proposed",
+              proposedBy: "me",
+            }
+          : apt
+      )
+    );
+    setReschedulingApt(null);
+    setNewAptDate("");
+    setNewAptTime("");
+  };
+
+  const addAppointment = () => {
+    if (!aptTitle || !aptDate || !aptTime) return;
+
+    const newApt: Appointment = {
+      id: Math.random().toString(36).substr(2, 9),
+      title: aptTitle,
+      date: aptDate,
+      time: aptTime,
+      location: aptLocation,
+      status: "pending",
+      proposedBy: "me",
+    };
+
+    setAppointments([newApt, ...appointments]);
+    setAptTitle("");
+    setAptDate("");
+    setAptTime("");
+    setAptLocation("");
+    setIsAddingAppointment(false);
+  };
+
+  const updateAptStatus = (id: string, status: Appointment["status"]) => {
+    setAppointments(
+      appointments.map((apt) => (apt.id === id ? { ...apt, status } : apt))
+    );
+  };
 
   const toggleItem = (listId: string, itemId: string) => {
     setLists((prev) =>
@@ -138,10 +259,10 @@ export default function PlanesPage() {
         return {
           ...list,
           items: list.items.map((item) =>
-            item.id === itemId ? { ...item, completed: !item.completed } : item,
+            item.id === itemId ? { ...item, completed: !item.completed } : item
           ),
         };
-      }),
+      })
     );
   };
 
@@ -160,7 +281,7 @@ export default function PlanesPage() {
       prev.map((list) => {
         if (list.id !== listId) return list;
         return { ...list, items: [newItem, ...list.items] };
-      }),
+      })
     );
 
     setNewItemText("");
@@ -173,7 +294,7 @@ export default function PlanesPage() {
       prev.map((list) => {
         if (list.id !== listId) return list;
         return { ...list, items: list.items.filter((i) => i.id !== itemId) };
-      }),
+      })
     );
   };
 
@@ -185,7 +306,7 @@ export default function PlanesPage() {
         listBg: l.bgColor,
         listColor: l.color,
         listId: l.id,
-      })),
+      }))
     );
     return all.sort((a, b) => b.timestamp - a.timestamp).slice(0, 3);
   }, [lists]);
@@ -198,18 +319,121 @@ export default function PlanesPage() {
     <main className="min-h-screen bg-[#F8F5F6] pb-32">
       <header className="px-6 py-10 flex flex-col gap-1 animate-fade-in">
         <h1 className="text-3xl font-black text-gray-900 tracking-tight">
-          Planes
+          Nuestra Historia
         </h1>
         <p className="text-sm font-medium text-gray-500">
-          Nuestras listas y deseos
+          Listas, deseos y citas por venir
         </p>
       </header>
 
+      {/* Agenda Section */}
       <section className="mb-10 px-6">
-        <div className="mb-4">
-          <h2 className="text-base font-semibold text-gray-600">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-base font-semibold text-gray-600 flex items-center gap-2">
+            <CalendarDays className="h-4 w-4 text-[#F43E5C]" />
+            Nuestra Agenda
+          </h2>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsAddingAppointment(true)}
+            className="text-[#F43E5C] font-bold text-xs p-0 h-auto hover:bg-transparent"
+          >
+            Nueva Cita
+          </Button>
+        </div>
+
+        <div className="flex flex-col gap-4">
+          {appointments.map((apt, index) => (
+            <Card
+              key={apt.id}
+              onClick={() =>
+                apt.proposedBy === "partner" && setSelectedApt(apt)
+              }
+              style={{ animationDelay: `${index * 100}ms` }}
+              className={cn(
+                "overflow-hidden rounded-[28px] border-none shadow-sm ring-1 ring-black/5 animate-slide-up transition-all",
+                apt.proposedBy === "partner" && "active:scale-95 cursor-pointer"
+              )}
+            >
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="space-y-1">
+                    <h3 className="text-base font-black text-gray-900 leading-tight">
+                      {apt.title}
+                    </h3>
+                    {apt.proposedBy === "partner" &&
+                      apt.status === "pending" && (
+                        <p className="text-[10px] font-bold text-[#F43E5C]">
+                          Tu pareja te invita a esta cita
+                        </p>
+                      )}
+                    {apt.location && (
+                      <div className="flex items-center gap-1.5 text-gray-400">
+                        <MapPin className="h-3 w-3" />
+                        <span className="text-[11px] font-medium">
+                          {apt.location}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <div
+                    className={cn(
+                      "px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider",
+                      apt.status === "accepted"
+                        ? "bg-emerald-100 text-emerald-600"
+                        : apt.status === "pending"
+                        ? "bg-amber-100 text-amber-600"
+                        : apt.status === "proposed"
+                        ? "bg-blue-100 text-blue-600"
+                        : "bg-red-100 text-red-600"
+                    )}
+                  >
+                    {apt.status === "accepted"
+                      ? "Confirmada"
+                      : apt.status === "pending"
+                      ? "Pendiente"
+                      : apt.status === "proposed"
+                      ? "Nuevo Horario"
+                      : "Rechazada"}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-1.5 text-gray-500 bg-gray-50 px-2.5 py-1.5 rounded-xl">
+                    <Calendar className="h-3 w-3 text-[#F43E5C]" />
+                    <span className="text-[11px] font-bold">
+                      {new Date(apt.date).toLocaleDateString("es-ES", {
+                        day: "numeric",
+                        month: "short",
+                      })}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-gray-500 bg-gray-50 px-2.5 py-1.5 rounded-xl">
+                    <Clock className="h-3 w-3 text-[#F43E5C]" />
+                    <span className="text-[11px] font-bold">{apt.time}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      <section className="mb-10 px-6">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-base font-semibold text-gray-600 flex items-center gap-2">
+            <Zap className="h-4 w-4 text-[#F43E5C]" />
             Accesos Rápidos
           </h2>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsAddingItem(true)}
+            className="text-[#F43E5C] font-bold text-xs p-0 h-auto hover:bg-transparent"
+          >
+            Nuevo Item
+          </Button>
         </div>
         <div className="grid grid-cols-2 gap-3">
           {lists.map((list, index) => {
@@ -242,8 +466,11 @@ export default function PlanesPage() {
       </section>
 
       <section className="px-6 mb-10">
-        <div className="mb-4">
-          <h2 className="text-base font-semibold text-gray-600">Recientes</h2>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-base font-semibold text-gray-600 flex items-center gap-2">
+            <History className="h-4 w-4 text-[#F43E5C]" />
+            Recientes
+          </h2>
         </div>
 
         <div className="flex flex-col gap-3">
@@ -298,13 +525,8 @@ export default function PlanesPage() {
         </div>
       </section>
 
-      {/* Floating Add Button */}
+      {/* Modal is still here, but triggered by the section button now */}
       <Dialog open={isAddingItem} onOpenChange={setIsAddingItem}>
-        <DialogTrigger asChild>
-          <button className="fixed bottom-32 right-6 z-30 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F43E5C] text-white shadow-2xl shadow-[#F43E5C]/40 active:scale-95 transition-all hover:scale-110">
-            <Plus className="h-6 w-6" />
-          </button>
-        </DialogTrigger>
         <DialogContent className="max-w-none w-screen h-screen m-0 p-0 bg-[#F8F5F6] border-none rounded-none overflow-hidden flex flex-col z-100">
           <div className="relative flex flex-col h-full overflow-hidden">
             <div className="absolute top-6 right-6 z-110">
@@ -437,7 +659,7 @@ export default function PlanesPage() {
                       "flex items-center justify-between p-4 rounded-2xl transition-all group",
                       item.completed
                         ? "bg-white/40 opacity-60"
-                        : "bg-white shadow-sm ring-1 ring-black/5",
+                        : "bg-white shadow-sm ring-1 ring-black/5"
                     )}
                   >
                     <button
@@ -457,7 +679,7 @@ export default function PlanesPage() {
                           "text-sm font-bold tracking-tight truncate",
                           item.completed
                             ? "text-gray-400 line-through"
-                            : "text-gray-900",
+                            : "text-gray-900"
                         )}
                       >
                         {item.text}
@@ -514,6 +736,215 @@ export default function PlanesPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* New Appointment Dialog */}
+      <Dialog open={isAddingAppointment} onOpenChange={setIsAddingAppointment}>
+        <DialogContent className="max-w-none w-screen h-screen m-0 p-0 bg-[#F8F5F6] border-none rounded-none overflow-hidden flex flex-col z-110">
+          <div className="relative flex flex-col h-full overflow-hidden">
+            <div className="absolute top-6 right-6 z-120">
+              <button
+                onClick={() => setIsAddingAppointment(false)}
+                className="h-10 w-10 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-md shadow-sm ring-1 ring-black/5 active:scale-95 transition-all"
+              >
+                <X className="h-5 w-5 text-gray-900" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-6 pt-12 pb-32 flex flex-col gap-8">
+              <header className="flex flex-col gap-1 py-2">
+                <DialogTitle className="text-3xl font-black text-gray-900 leading-tight">
+                  Nueva Cita
+                </DialogTitle>
+                <DialogDescription className="text-sm font-medium text-gray-500">
+                  Propón un plan especial
+                </DialogDescription>
+              </header>
+
+              <div className="space-y-6">
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#F43E5C]">
+                    ¿Qué haremos?
+                  </label>
+                  <Input
+                    value={aptTitle}
+                    onChange={(e) => setAptTitle(e.target.value)}
+                    placeholder="Ej: Cena romántica, Ver el atardecer..."
+                    className="h-14 rounded-2xl border-none bg-white px-6 shadow-sm ring-1 ring-black/5 focus-visible:ring-[#F43E5C]/40 text-base font-bold"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#F43E5C]">
+                      Fecha
+                    </label>
+                    <Input
+                      type="date"
+                      value={aptDate}
+                      onChange={(e) => setAptDate(e.target.value)}
+                      className="h-14 rounded-2xl border-none bg-white px-6 shadow-sm ring-1 ring-black/5 focus-visible:ring-[#F43E5C]/40 text-base font-bold"
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#F43E5C]">
+                      Hora
+                    </label>
+                    <Input
+                      type="time"
+                      value={aptTime}
+                      onChange={(e) => setAptTime(e.target.value)}
+                      className="h-14 rounded-2xl border-none bg-white px-6 shadow-sm ring-1 ring-black/5 focus-visible:ring-[#F43E5C]/40 text-base font-bold"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#F43E5C]">
+                    ¿Dónde será?
+                  </label>
+                  <Input
+                    value={aptLocation}
+                    onChange={(e) => setAptLocation(e.target.value)}
+                    placeholder="Ej: Nuestra casa, Restaurante..."
+                    className="h-14 rounded-2xl border-none bg-white px-6 shadow-sm ring-1 ring-black/5 focus-visible:ring-[#F43E5C]/40 text-base font-bold"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <footer className="fixed bottom-0 left-0 right-0 p-6 bg-[#F8F5F6]/90 backdrop-blur-xl border-t border-black/5">
+              <Button
+                onClick={addAppointment}
+                className="h-16 w-full rounded-[24px] bg-[#F43E5C] text-white font-black shadow-2xl shadow-[#F43E5C]/30 active:scale-95 transition-all text-lg"
+              >
+                Enviar Propuesta
+              </Button>
+            </footer>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Rescheduling Dialog */}
+      <Dialog
+        open={!!reschedulingApt}
+        onOpenChange={(open) => !open && setReschedulingApt(null)}
+      >
+        <DialogContent className="max-w-none w-screen h-screen m-0 p-0 bg-[#F8F5F6] border-none rounded-none overflow-hidden flex flex-col z-120">
+          <div className="relative flex flex-col h-full overflow-hidden">
+            <div className="absolute top-6 right-6 z-130">
+              <button
+                onClick={() => setReschedulingApt(null)}
+                className="h-10 w-10 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-md shadow-sm ring-1 ring-black/5 active:scale-95 transition-all"
+              >
+                <X className="h-5 w-5 text-gray-900" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-6 pt-12 pb-32 flex flex-col gap-8">
+              <header className="flex flex-col gap-1 py-2">
+                <DialogTitle className="text-3xl font-black text-gray-900 leading-tight">
+                  Nuevo Horario
+                </DialogTitle>
+                <DialogDescription className="text-sm font-medium text-gray-500">
+                  Propón un nuevo momento para "{reschedulingApt?.title}"
+                </DialogDescription>
+              </header>
+
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#F43E5C]">
+                      Nueva Fecha
+                    </label>
+                    <Input
+                      type="date"
+                      value={newAptDate}
+                      onChange={(e) => setNewAptDate(e.target.value)}
+                      className="h-14 rounded-2xl border-none bg-white px-6 shadow-sm ring-1 ring-black/5 focus-visible:ring-[#F43E5C]/40 text-base font-bold"
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#F43E5C]">
+                      Nueva Hora
+                    </label>
+                    <Input
+                      type="time"
+                      value={newAptTime}
+                      onChange={(e) => setNewAptTime(e.target.value)}
+                      className="h-14 rounded-2xl border-none bg-white px-6 shadow-sm ring-1 ring-black/5 focus-visible:ring-[#F43E5C]/40 text-base font-bold"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <footer className="fixed bottom-0 left-0 right-0 p-6 bg-[#F8F5F6]/90 backdrop-blur-xl border-t border-black/5">
+              <Button
+                onClick={proposeNewTime}
+                className="h-16 w-full rounded-[24px] bg-[#3B82F6] text-white font-black shadow-2xl shadow-blue-500/30 active:scale-95 transition-all text-lg"
+              >
+                Proponer Cambio
+              </Button>
+            </footer>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Appointment Detail Drawer */}
+      <Drawer
+        open={!!selectedApt}
+        onOpenChange={(open) => !open && setSelectedApt(null)}
+      >
+        <DrawerContent className="bg-[#F8F5F6] border-none rounded-t-[40px] max-h-[90vh]">
+          <div className="mx-auto w-12 h-1.5 bg-gray-200 rounded-full mt-4 mb-2" />
+          <div className="px-6 pb-12 flex flex-col gap-8 overflow-y-auto">
+            <header className="flex flex-col gap-3 pt-6 text-center">
+              <DrawerTitle className="text-2xl font-black text-gray-900 leading-tight tracking-tight">
+                {selectedApt?.title}
+              </DrawerTitle>
+            </header>
+
+            {selectedApt?.proposedBy === "partner" &&
+              (selectedApt.status === "pending" ||
+                selectedApt.status === "proposed") && (
+                <div className="flex flex-col gap-3">
+                  <Button
+                    onClick={() => {
+                      updateAptStatus(selectedApt.id, "accepted");
+                      setSelectedApt(null);
+                    }}
+                    className="h-16 w-full rounded-[24px] bg-emerald-500 text-white font-black shadow-xl shadow-emerald-500/30 active:scale-95 transition-all text-lg flex items-center justify-center gap-3 border-none"
+                  >
+                    <CheckCircle2 className="h-6 w-6" />
+                    Aceptar Cita
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setReschedulingApt(selectedApt);
+                      setNewAptDate(selectedApt.date);
+                      setNewAptTime(selectedApt.time);
+                      setSelectedApt(null);
+                    }}
+                    className="h-16 w-full rounded-[24px] bg-blue-500 text-white font-black shadow-xl shadow-blue-500/30 active:scale-95 transition-all text-lg flex items-center justify-center gap-3 border-none"
+                  >
+                    <Clock className="h-6 w-6" />
+                    Proponer Nuevo Horario
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      updateAptStatus(selectedApt.id, "rejected");
+                      setSelectedApt(null);
+                    }}
+                    className="h-16 w-full rounded-[24px] bg-red-500 text-white font-black shadow-xl shadow-red-500/30 active:scale-95 transition-all text-lg flex items-center justify-center gap-3 border-none"
+                  >
+                    <X className="h-6 w-6" />
+                    Rechazar
+                  </Button>
+                </div>
+              )}
+          </div>
+        </DrawerContent>
+      </Drawer>
     </main>
   );
 }
