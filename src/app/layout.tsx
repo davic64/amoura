@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import DeviceDetector from "@/components/DeviceDetector";
 import Splash from "@/components/Splash";
-import { Navbar } from "@/components/layout/Navbar";
 
 export const metadata: Metadata = {
   title: "Amoura",
@@ -64,7 +63,6 @@ export default function RootLayout({
         <Splash />
         <DeviceDetector />
         <div>{children}</div>
-        <Navbar />
       </body>
     </html>
   );
