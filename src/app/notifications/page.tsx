@@ -66,7 +66,7 @@ export default function NotificacionesPage() {
           notifications.map((n, index) => (
             <div
               key={n.id}
-              style={{ animationDelay: `${index * 100}ms` }}
+              style={{ animationDelay: `${200 + index * 150}ms` }}
               className="animate-slide-right"
             >
               <Alert className="relative overflow-hidden pr-10 border-none shadow-sm ring-1 ring-black/5 bg-white rounded-3xl p-5 flex gap-4 items-center">

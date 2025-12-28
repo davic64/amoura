@@ -218,7 +218,7 @@ export default function PlanesPage() {
               <button
                 key={list.id}
                 onClick={() => setSelectedList(list)}
-                style={{ animationDelay: `${index * 100}ms` }}
+                style={{ animationDelay: `${200 + index * 150}ms` }}
                 className="bg-white rounded-[32px] p-5 flex flex-col items-start gap-4 shadow-sm ring-1 ring-black/5 active:scale-95 transition-all animate-scale-in"
               >
                 <div
@@ -250,7 +250,7 @@ export default function PlanesPage() {
           {recentItems.map((item, index) => (
             <Card
               key={item.id}
-              style={{ animationDelay: `${400 + index * 100}ms` }}
+              style={{ animationDelay: `${600 + index * 150}ms` }}
               className="overflow-hidden rounded-[24px] border-none shadow-sm ring-1 ring-black/5 active:scale-[0.98] transition-all animate-slide-up"
             >
               <CardContent className="p-4">

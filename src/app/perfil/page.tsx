@@ -168,7 +168,7 @@ export default function PerfilPage() {
 
       <div className="px-6 flex flex-col gap-8">
         {/* User Card */}
-        <section className="bg-white rounded-[40px] p-8 shadow-xl shadow-black/2 ring-1 ring-black/3 flex flex-col items-center text-center animate-scale-in delay-100">
+        <section className="bg-white rounded-[40px] p-8 shadow-xl shadow-black/2 ring-1 ring-black/3 flex flex-col items-center text-center animate-scale-in delay-200">
           <div className="h-24 w-24 rounded-[32px] bg-[#FFE5EB] flex items-center justify-center text-[#F43E5C] mb-4 shadow-inner">
             <User className="h-12 w-12" />
           </div>
@@ -200,7 +200,7 @@ export default function PerfilPage() {
         </section>
 
         {/* Partner Section */}
-        <section className="space-y-4 animate-slide-up delay-200">
+        <section className="space-y-4 animate-slide-up delay-400">
           <div className="flex items-center justify-between px-6">
             <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#F43E5C]">
               Mi Pareja
@@ -340,7 +340,7 @@ export default function PerfilPage() {
         </Dialog>
 
         {/* Action Buttons */}
-        <section className="flex flex-col gap-3 animate-slide-up delay-300">
+        <section className="flex flex-col gap-3 animate-slide-up delay-600">
           <Button
             variant="ghost"
             className="h-14 w-full rounded-2xl justify-between px-6 bg-white shadow-sm ring-1 ring-black/5 hover:bg-gray-50 group transition-all"
@@ -373,7 +373,7 @@ export default function PerfilPage() {
         </section>
 
         {/* Version Info */}
-        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-300 text-center mt-4 animate-fade-in delay-400">
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-300 text-center mt-4 animate-fade-in delay-800">
           Amoura v1.0.4 • Hecho con amor
         </p>
       </div>

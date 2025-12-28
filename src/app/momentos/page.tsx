@@ -428,7 +428,7 @@ export default function MomentosPage() {
           return (
             <Card
               key={m.id}
-              style={{ animationDelay: `${Math.min(index * 100, 500)}ms` }}
+              style={{ animationDelay: `${200 + index * 150}ms` }}
               className={cn(
                 "overflow-hidden transition-all duration-300 rounded-[32px] border-none shadow-md ring-1 ring-black/5 animate-slide-up",
                 isLocked
