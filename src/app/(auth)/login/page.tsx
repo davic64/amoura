@@ -38,10 +38,10 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#F8F5F6] flex flex-col items-center justify-center px-6 relative overflow-hidden">
+    <main className="h-svh bg-[#F8F5F6] flex flex-col items-center justify-center px-6 relative overflow-hidden">
       {/* Decorative Background Elements */}
-      <div className="absolute -top-[10%] -left-[10%] w-[60%] h-[40%] bg-linear-to-br from-[#FF6B92]/20 to-transparent blur-[120px] rounded-full" />
-      <div className="absolute -bottom-[10%] -right-[10%] w-[60%] h-[40%] bg-linear-to-br from-[#B345D1]/10 to-transparent blur-[120px] rounded-full" />
+      <div className="fixed -top-[20%] -left-[20%] w-full h-[60%] bg-linear-to-br from-[#FF6B92]/25 to-transparent blur-[120px] rounded-full pointer-events-none" />
+      <div className="fixed -bottom-[15%] -right-[15%] w-[80%] h-[50%] bg-linear-to-br from-[#B345D1]/15 to-transparent blur-[120px] rounded-full pointer-events-none" />
 
       <div className="w-full max-w-sm z-10">
         <header className="flex flex-col items-center text-center mb-10 animate-fade-in delay-200">
